@@ -38,35 +38,40 @@ class ScreenClipper(object):
     # tkinterが使う座標は全てスケールされたものであることに注意
 
     def __init__(self):
-        self.camera = ScreenCamera()
-        self.tk_root = self.setup_tk()
         # self.boxにはスケールされていない座標を使う
         self.box = [SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 4 * 3, SCREEN_HEIGHT / 4 * 3]
+        self.middles = [[0, SCREEN_HEIGHT / 2],
+                        [SCREEN_WIDTH / 2, 0],
+                        [SCREEN_WIDTH, SCREEN_HEIGHT / 2],
+                        [SCREEN_WIDTH / 2, SCREEN_HEIGHT]]
+        self.camera = ScreenCamera()
+
+        self.root = tkinter.Tk()
+        self.width, self.height = self.setup_root()
+        self.canvas = tkinter.Canvas(self.root, width=self.width, height=self.height)
         self.draw_box()
         self.place_button()
-        self.tk_root.mainloop()
+        self.root.mainloop()
 
-    def setup_tk(self):
+    def setup_root(self):
         """ Tkを組み立てる """
-        root = tkinter.Tk()
-        width = root.winfo_screenwidth()
-        height = root.winfo_screenheight()
-        root.title("ScreenCamera")
-        root.attributes("-alpha", 0.5)
-        root.attributes("-topmost", "true")
-        root.geometry("%dx%d+%d+%d" % (width, height, 0, 0))
-        return root
+        width = self.root.winfo_screenwidth()
+        height = self.root.winfo_screenheight()
+        self.root.title("ScreenCamera")
+        self.root.attributes("-alpha", 0.5)
+        self.root.attributes("-topmost", "true")
+        self.root.geometry("%dx%d+%d+%d" % (width, height, 0, 0))
+        return width, height
 
     def draw_box(self):
         """ self.boxを描画する """
         # canvasに渡す座標はスケールされたものであることに注意
-        canvas = tkinter.Canvas(self.tk_root, width=self.tk_root.winfo_screenwidth(), height=self.tk_root.winfo_screenheight())
         scaled_box = [x / SCREEN_SCALING_FACTOR for x in self.box]
-        canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[0], scaled_box[3]))
-        canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[2], scaled_box[1]))
-        canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[0], scaled_box[3]))
-        canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[2], scaled_box[1]))
-        canvas.place(x=0, y=0)
+        self.canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[0], scaled_box[3]))
+        self.canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[2], scaled_box[1]))
+        self.canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[0], scaled_box[3]))
+        self.canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[2], scaled_box[1]))
+        self.canvas.place(x=0, y=0)
 
     def place_button(self):
         """ ボタンを配置する """
@@ -76,16 +81,16 @@ class ScreenClipper(object):
 
     def on_button_click(self, event):
         """ コールバック関数 """
-        self.tk_root.attributes("-alpha", 0.0)
+        self.root.attributes("-alpha", 0.0)
         self.clip_and_save()
-        self.tk_root.attributes("-alpha", 0.5)
+        self.root.attributes("-alpha", 0.5)
 
     def clip_and_save(self):
         """ self.boxのスクリーンショットを取って保存する """
         # ウィンドウのずれを補正
         # root.winfo*()で得られる座標はスケールされたものであることに注意
-        dx = self.tk_root.winfo_rootx() * 1.5
-        dy = self.tk_root.winfo_rooty() * 1.5 + 1
+        dx = self.root.winfo_rootx() * 1.5
+        dy = self.root.winfo_rooty() * 1.5 + 1
         img = self.camera.screenshot().crop([self.box[0] + dx, self.box[1] + dy, self.box[2] + dx, self.box[3] + dy])
         img.show()
         # img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
