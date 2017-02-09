@@ -76,7 +76,9 @@ class ScreenClipper(object):
 
     def on_button_click(self, event):
         """ コールバック関数 """
+        self.tk_root.attributes("-alpha", 0.0)
         self.clip_and_save()
+        self.tk_root.attributes("-alpha", 0.5)
 
     def clip_and_save(self):
         """ self.boxのスクリーンショットを取って保存する """
