@@ -40,16 +40,17 @@ class ScreenClipper(object):
     def __init__(self):
         # self.boxにはスケールされていない座標を使う
         self.box = [SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 4 * 3, SCREEN_HEIGHT / 4 * 3]
-        self.middles = [[0, SCREEN_HEIGHT / 2],
-                        [SCREEN_WIDTH / 2, 0],
-                        [SCREEN_WIDTH, SCREEN_HEIGHT / 2],
-                        [SCREEN_WIDTH / 2, SCREEN_HEIGHT]]
+        self.middles = [[self.box[0], (self.box[1] + self.box[3]) / 2],
+                        [self.box[2], (self.box[1] + self.box[3]) / 2],
+                        [(self.box[0] + self.box[2]) / 2, self.box[1]],
+                        [(self.box[0] + self.box[2]) / 2, self.box[3]]]
         self.camera = ScreenCamera()
 
         self.root = tkinter.Tk()
         self.width, self.height = self.setup_root()
         self.canvas = tkinter.Canvas(self.root, width=self.width, height=self.height)
         self.draw_box()
+        self.canvas.place(x=0, y=0)
         self.place_button()
         self.root.mainloop()
 
@@ -66,12 +67,12 @@ class ScreenClipper(object):
     def draw_box(self):
         """ self.boxを描画する """
         # canvasに渡す座標はスケールされたものであることに注意
+        r = 30
         scaled_box = [x / SCREEN_SCALING_FACTOR for x in self.box]
-        self.canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[0], scaled_box[3]))
-        self.canvas.create_line((scaled_box[0], scaled_box[1], scaled_box[2], scaled_box[1]))
-        self.canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[0], scaled_box[3]))
-        self.canvas.create_line((scaled_box[2], scaled_box[3], scaled_box[2], scaled_box[1]))
-        self.canvas.place(x=0, y=0)
+        scaled_middles = [[x / SCREEN_SCALING_FACTOR, y / SCREEN_SCALING_FACTOR] for x, y in self.middles]
+        self.canvas.create_rectangle(scaled_box)
+        for middle in scaled_middles:
+            self.canvas.create_rectangle([middle[0] - r, middle[1] - r, middle[0] + r, middle[1] + r], fill="gray")
 
     def place_button(self):
         """ ボタンを配置する """
