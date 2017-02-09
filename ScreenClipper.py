@@ -75,7 +75,7 @@ class ScreenClipper(object):
 
     def place_button(self):
         """ ボタンを配置する """
-        button = tkinter.Button(text='screenshot')
+        button = tkinter.Button(text='screenshot', bg="blue", fg="yellow")
         button.bind("<Button-1>", self.on_button_click)
         button.pack()
 
