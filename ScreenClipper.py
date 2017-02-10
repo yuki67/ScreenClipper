@@ -39,40 +39,13 @@ class ScreenClipper(object):
 
     def __init__(self):
         # self.boxにはスケールされていない座標を使う
-        self.box = [SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 4 * 3, SCREEN_HEIGHT / 4 * 3]
-        self.middles = [[self.box[0], (self.box[1] + self.box[3]) / 2],
-                        [self.box[2], (self.box[1] + self.box[3]) / 2],
-                        [(self.box[0] + self.box[2]) / 2, self.box[1]],
-                        [(self.box[0] + self.box[2]) / 2, self.box[3]]]
         self.camera = ScreenCamera()
-
         self.root = tkinter.Tk()
-        self.width, self.height = self.setup_root()
-        self.canvas = tkinter.Canvas(self.root, width=self.width, height=self.height)
-        self.draw_box()
-        self.canvas.place(x=0, y=0)
+        self.root.title("ScreenClipper")
+        self.root.attributes("-alpha", 0.5)
+        self.root.geometry("%dx%d+%d+%d" % (500, 500, 0, 0))
         self.place_button()
         self.root.mainloop()
-
-    def setup_root(self):
-        """ Tkを組み立てる """
-        width = self.root.winfo_screenwidth()
-        height = self.root.winfo_screenheight()
-        self.root.title("ScreenCamera")
-        self.root.attributes("-alpha", 0.5)
-        self.root.attributes("-topmost", "true")
-        self.root.geometry("%dx%d+%d+%d" % (width, height, 0, 0))
-        return width, height
-
-    def draw_box(self):
-        """ self.boxを描画する """
-        # canvasに渡す座標はスケールされたものであることに注意
-        r = 30
-        scaled_box = [x / SCREEN_SCALING_FACTOR for x in self.box]
-        scaled_middles = [[x / SCREEN_SCALING_FACTOR, y / SCREEN_SCALING_FACTOR] for x, y in self.middles]
-        self.canvas.create_rectangle(scaled_box)
-        for middle in scaled_middles:
-            self.canvas.create_rectangle([middle[0] - r, middle[1] - r, middle[0] + r, middle[1] + r], fill="gray")
 
     def place_button(self):
         """ ボタンを配置する """
@@ -88,13 +61,13 @@ class ScreenClipper(object):
 
     def clip_and_save(self):
         """ self.boxのスクリーンショットを取って保存する """
-        # ウィンドウのずれを補正
-        # root.winfo*()で得られる座標はスケールされたものであることに注意
         dx = self.root.winfo_rootx() * 1.5
         dy = self.root.winfo_rooty() * 1.5 + 1
-        img = self.camera.screenshot().crop([self.box[0] + dx, self.box[1] + dy, self.box[2] + dx, self.box[3] + dy])
-        img.show()
-        # img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
+        img = self.camera.screenshot().crop([dx,
+                                             dy,
+                                             dx + self.root.winfo_width() * SCREEN_SCALING_FACTOR,
+                                             dy + self.root.winfo_height() * SCREEN_SCALING_FACTOR])
+        img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
 
 
 if __name__ == "__main__":
