@@ -4,6 +4,7 @@ import win32gui
 import win32ui
 import win32con
 from PIL import Image
+from MyGUI import MyTkBase
 
 # グローバル変数
 # どうしても無くせなかった
@@ -12,55 +13,62 @@ SCREEN_HEIGHT = 1440
 SCREEN_SCALING_FACTOR = 1.5
 
 
-class ScreenClipper(object):
-    """ スクリーンショットを撮るための補助GUI """
-    # tkinterが使う座標は全てスケールされたものであることに注意
+def screenshot():
+    """ スクリーンショット撮ってそれを(Pillow.Imageで)返す """
+    window = win32gui.GetDesktopWindow()
+    window_dc = win32ui.CreateDCFromHandle(win32gui.GetWindowDC(window))
+    compatible_dc = window_dc.CreateCompatibleDC()
+    width = SCREEN_WIDTH
+    height = SCREEN_HEIGHT
+    bmp = win32ui.CreateBitmap()
+    bmp.CreateCompatibleBitmap(window_dc, width, height)
+    compatible_dc.SelectObject(bmp)
+    compatible_dc.BitBlt((0, 0), (width, height), window_dc, (0, 0), win32con.SRCCOPY)
+    img = Image.frombuffer('RGB', (width, height), bmp.GetBitmapBits(True), 'raw', 'BGRX', 0, 1)
+    return img
 
-    def __init__(self):
-        # self.boxにはスケールされていない座標を使う
-        self.root = tkinter.Tk()
-        self.root.title("ScreenClipper")
-        self.root.attributes("-alpha", 0.5)
-        self.root.geometry("%dx%d+%d+%d" % (500, 500, 0, 0))
-        self.place_button()
-        self.root.mainloop()
 
-    def place_button(self):
-        """ ボタンを配置する """
-        button = tkinter.Button(text='screenshot', bg="blue", fg="yellow")
-        button.bind("<Button-1>", self.on_button_click)
-        button.pack()
+class ClipperButton(tkinter.Button):
+
+    def __init__(self, master, text, bg, fg):
+        super().__init__(master)
+        self["text"] = text
+        self["bg"] = bg
+        self["fg"] = fg
+        self.bind("<Button-1>", self.on_button_click)
 
     def on_button_click(self, event):
         """ コールバック関数 """
-        self.root.attributes("-alpha", 0.0)
+        self.master.master.attributes("-alpha", 0.0)
         self.clip_and_save()
-        self.root.attributes("-alpha", 0.5)
+        self.master.master.attributes("-alpha", 0.5)
 
     def clip_and_save(self):
         """ self.boxのスクリーンショットを取って保存する """
-        dx = self.root.winfo_rootx() * 1.5
-        dy = self.root.winfo_rooty() * 1.5 + 1
-        img = self.screenshot().crop([dx,
-                                      dy,
-                                      dx + self.root.winfo_width() * SCREEN_SCALING_FACTOR,
-                                      dy + self.root.winfo_height() * SCREEN_SCALING_FACTOR])
+        dx = self.master.master.winfo_rootx() * 1.5
+        dy = self.master.master.winfo_rooty() * 1.5 + 1
+        img = screenshot().crop([dx,
+                                 dy,
+                                 dx + self.master.master.winfo_width() * SCREEN_SCALING_FACTOR,
+                                 dy + self.master.master.winfo_height() * SCREEN_SCALING_FACTOR])
         img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
 
-    @staticmethod
-    def screenshot():
-        """ スクリーンショット撮ってそれを(Pillow.Imageで)返す """
-        window = win32gui.GetDesktopWindow()
-        window_dc = win32ui.CreateDCFromHandle(win32gui.GetWindowDC(window))
-        compatible_dc = window_dc.CreateCompatibleDC()
-        width = SCREEN_WIDTH
-        height = SCREEN_HEIGHT
-        bmp = win32ui.CreateBitmap()
-        bmp.CreateCompatibleBitmap(window_dc, width, height)
-        compatible_dc.SelectObject(bmp)
-        compatible_dc.BitBlt((0, 0), (width, height), window_dc, (0, 0), win32con.SRCCOPY)
-        img = Image.frombuffer('RGB', (width, height), bmp.GetBitmapBits(True), 'raw', 'BGRX', 0, 1)
-        return img
+
+class ScreenClipper(tkinter.Frame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        ClipperButton(self, text='screenshot', bg="blue", fg="yellow").pack()
+        self.pack()
+        self.master.mainloop()
+
+
+class MyTk(MyTkBase):
+
+    def __init__(self, width, height, name):
+        super().__init__(width, height, name)
+        self.attributes("-alpha", 0.5)
 
 if __name__ == "__main__":
-    ScreenClipper()
+    root = MyTk(500, 500, "Screen Clipper")
+    ScreenClipper(root)
