@@ -48,7 +48,7 @@ class ClipperButton(tkinter.Button):
     def clip_and_save(self):
         """ self.boxのスクリーンショットを取って保存する """
         dx = self.master.winfo_rootx() * 1.5
-        dy = self.master.winfo_rooty() * 1.5 + 1
+        dy = self.master.winfo_rooty() * 1.5
         img = screenshot().crop([dx,
                                  dy,
                                  dx + self.master.winfo_width() * SCREEN_SCALING_FACTOR,
@@ -61,22 +61,60 @@ class TextBox(tkinter.Label):
 
     def __init__(self, master):
         super().__init__(master)
-        self["text"] = "%dx%d" % (master.winfo_width() * SCREEN_SCALING_FACTOR, master.winfo_height() * SCREEN_SCALING_FACTOR)
+        self["text"] = "size: %dx%d" % (master.winfo_width() * SCREEN_SCALING_FACTOR, master.winfo_height() * SCREEN_SCALING_FACTOR)
         self["font"] = ("Arial", 20, "bold")
         self.bind('<Configure>', self.on_size_changed)
 
     def on_size_changed(self, _):
         """ テキストを変更 """
-        self["text"] = "%dx%d" % (self.master.winfo_width() * SCREEN_SCALING_FACTOR, self.master.winfo_height() * SCREEN_SCALING_FACTOR)
+        self["text"] = "size: %dx%d" % (self.master.winfo_width() * SCREEN_SCALING_FACTOR, self.master.winfo_height() * SCREEN_SCALING_FACTOR)
+
+
+class ResizeButton(tkinter.Button):
+    """ 押されるとリサイズを実行するボタン """
+
+    def __init__(self, master, entry):
+        super().__init__(master)
+        self["text"] = "resize"
+        self.entry = entry
+        self.bind("<Button-1>", self.on_button_click)
+
+    def on_button_click(self, _):
+        """ エントリからサイズを読み取ってリサイズする """
+        string = self.entry.get()
+        try:
+            w, h = string.split("x")
+            w, h = int(w) / SCREEN_SCALING_FACTOR, int(h) / SCREEN_SCALING_FACTOR
+        except ValueError:
+            return
+        self.master.geometry("%dx%d" % (int(w), int(h)))
+
+
+class ResizeEntry(tkinter.Entry):
+    """ リサイズするときにサイズを入力する場所 """
+
+    def __init__(self, master):
+        super().__init__(master)
+        self["font"] = ("Arial", 20, "bold")
+        self.insert(tkinter.END, "%dx%d" % (master.winfo_width() * SCREEN_SCALING_FACTOR, master.winfo_height() * SCREEN_SCALING_FACTOR))
+        self.bind('<Configure>', self.on_size_changed)
+
+    def on_size_changed(self, _):
+        """ テキストを変更 """
+        self.delete(0, tkinter.END)
+        self.insert(tkinter.END, "%dx%d" % (self.master.winfo_width() * SCREEN_SCALING_FACTOR, self.master.winfo_height() * SCREEN_SCALING_FACTOR))
 
 
 class MyTk(MyTkBase):
 
     def __init__(self, width, height, name):
         super().__init__(width, height, name)
+        self.attributes("-alpha", 0.5)
         ClipperButton(self).pack()
         TextBox(self).pack()
-        self.attributes("-alpha", 0.5)
+        entry = ResizeEntry(self)
+        entry.pack()
+        ResizeButton(self, entry).pack()
         self.mainloop()
 
 if __name__ == "__main__":
