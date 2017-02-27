@@ -76,6 +76,7 @@ class ResizeButton(tkinter.Button):
     def __init__(self, master, entry):
         super().__init__(master)
         self["text"] = "resize"
+        self["font"] = ("Arial", 20, "bold")
         self.entry = entry
         self.bind("<Button-1>", self.on_button_click)
 
