@@ -29,46 +29,55 @@ def screenshot():
 
 
 class ClipperButton(tkinter.Button):
-
-    def __init__(self, master, text, bg, fg):
-        super().__init__(master)
-        self["text"] = text
-        self["bg"] = bg
-        self["fg"] = fg
-        self.bind("<Button-1>", self.on_button_click)
-
-    def on_button_click(self, event):
-        """ コールバック関数 """
-        self.master.master.attributes("-alpha", 0.0)
-        self.clip_and_save()
-        self.master.master.attributes("-alpha", 0.5)
-
-    def clip_and_save(self):
-        """ self.boxのスクリーンショットを取って保存する """
-        dx = self.master.master.winfo_rootx() * 1.5
-        dy = self.master.master.winfo_rooty() * 1.5 + 1
-        img = screenshot().crop([dx,
-                                 dy,
-                                 dx + self.master.master.winfo_width() * SCREEN_SCALING_FACTOR,
-                                 dy + self.master.master.winfo_height() * SCREEN_SCALING_FACTOR])
-        img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
-
-
-class ScreenClipper(tkinter.Frame):
+    """ 押すとスクリーンショットが保存されるボタン """
 
     def __init__(self, master):
         super().__init__(master)
-        ClipperButton(self, text='screenshot', bg="blue", fg="yellow").pack()
-        self.pack()
-        self.master.mainloop()
+        self["text"] = "screenshot"
+        self["font"] = ("Arial", 20, "bold")
+        self["bg"] = "blue"
+        self["fg"] = "yellow"
+        self.bind("<Button-1>", self.on_button_click)
+
+    def on_button_click(self, _):
+        """ ウィンドウを透明にして画像を保存して透明度を元に戻す """
+        self.master.attributes("-alpha", 0.0)
+        self.clip_and_save()
+        self.master.attributes("-alpha", 0.5)
+
+    def clip_and_save(self):
+        """ self.boxのスクリーンショットを取って保存する """
+        dx = self.master.winfo_rootx() * 1.5
+        dy = self.master.winfo_rooty() * 1.5 + 1
+        img = screenshot().crop([dx,
+                                 dy,
+                                 dx + self.master.winfo_width() * SCREEN_SCALING_FACTOR,
+                                 dy + self.master.winfo_height() * SCREEN_SCALING_FACTOR])
+        img.save("screenshot_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".jpg")
+
+
+class TextBox(tkinter.Label):
+    """ 現在のウィンドウの大きさを表示するラベル """
+
+    def __init__(self, master):
+        super().__init__(master)
+        self["text"] = "%dx%d" % (master.winfo_width() * SCREEN_SCALING_FACTOR, master.winfo_height() * SCREEN_SCALING_FACTOR)
+        self["font"] = ("Arial", 20, "bold")
+        self.bind('<Configure>', self.on_size_changed)
+
+    def on_size_changed(self, _):
+        """ テキストを変更 """
+        self["text"] = "%dx%d" % (self.master.winfo_width() * SCREEN_SCALING_FACTOR, self.master.winfo_height() * SCREEN_SCALING_FACTOR)
 
 
 class MyTk(MyTkBase):
 
     def __init__(self, width, height, name):
         super().__init__(width, height, name)
+        ClipperButton(self).pack()
+        TextBox(self).pack()
         self.attributes("-alpha", 0.5)
+        self.mainloop()
 
 if __name__ == "__main__":
     root = MyTk(500, 500, "Screen Clipper")
-    ScreenClipper(root)
