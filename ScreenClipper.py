@@ -27,10 +27,10 @@ if platform.system() == "Windows":
         bmp = win32ui.CreateBitmap()
         bmp.CreateCompatibleBitmap(window_dc, real_width, real_height)
         compatible_dc.SelectObject(bmp)
-        compatible_dc.BitBlt((0, 0), (real_width, real_height), window_dc, (0, 0),
-                             win32con.SRCCOPY)
-        img = Image.frombuffer('RGB', (real_width, real_height), bmp.GetBitmapBits(True),
-                               'raw', 'BGRX', 0, 1)
+        compatible_dc.BitBlt((0, 0), (real_width, real_height), window_dc,
+                             (0, 0), win32con.SRCCOPY)
+        img = Image.frombuffer('RGB', (real_width, real_height),
+                               bmp.GetBitmapBits(True), 'raw', 'BGRX', 0, 1)
         return img
 elif platform.system() == "Linux":
     import pyscreenshot as ImageGrab
@@ -139,7 +139,6 @@ class ResizeEntry(tk.Entry):
 
 
 class MyTk(MyTkBase):
-
     def __init__(self, width, height, name):
         super().__init__(width, height, name)
         self.attributes("-alpha", 0.5)

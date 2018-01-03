@@ -2,12 +2,10 @@
 {
     "python.formatting.provider": "autopep8",
     "python.formatting.autopep8Args": [
-        "--max-line-length=180"        
     ],
     "python.formatting.formatOnSave": true,
     "python.linting.lintOnSave": true,
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "--rcfile=.vscode/.pylintrc"
     ]
 }
