@@ -70,8 +70,10 @@ class ClipperButton(tk.Button):
         dx = self.master.winfo_rootx() * SCREEN_SCALING_FACTOR
         dy = self.master.winfo_rooty() * SCREEN_SCALING_FACTOR
         img = screenshot().crop([
-            dx, dy, dx + self.master.winfo_width() * SCREEN_SCALING_FACTOR,
-            dy + self.master.winfo_height() * SCREEN_SCALING_FACTOR
+            int(dx),  # 整数でないとエラーが出る
+            int(dy),
+            int(dx + self.master.winfo_width() * SCREEN_SCALING_FACTOR),
+            int(dy + self.master.winfo_height() * SCREEN_SCALING_FACTOR)
         ])
         img.save("screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
                  ".jpg")
