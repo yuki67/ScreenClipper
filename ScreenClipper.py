@@ -11,6 +11,7 @@ if platform.system() == "Windows":
     import win32gui
     import win32ui
     import win32con
+    from win32api import GetSystemMetrics
     # グローバル変数
     # どうしても無くせなかった
     SCREEN_SCALING_FACTOR = 1.5
@@ -20,14 +21,15 @@ if platform.system() == "Windows":
         window = win32gui.GetDesktopWindow()
         window_dc = win32ui.CreateDCFromHandle(win32gui.GetWindowDC(window))
         compatible_dc = window_dc.CreateCompatibleDC()
-        width = SCREEN_WIDTH
-        height = SCREEN_HEIGHT
+        real_width = int(GetSystemMetrics(0) * SCREEN_SCALING_FACTOR)
+        real_height = int(GetSystemMetrics(1) * SCREEN_SCALING_FACTOR)
+        print(real_width, real_height)
         bmp = win32ui.CreateBitmap()
-        bmp.CreateCompatibleBitmap(window_dc, width, height)
+        bmp.CreateCompatibleBitmap(window_dc, real_width, real_height)
         compatible_dc.SelectObject(bmp)
-        compatible_dc.BitBlt((0, 0), (width, height), window_dc, (0, 0),
+        compatible_dc.BitBlt((0, 0), (real_width, real_height), window_dc, (0, 0),
                              win32con.SRCCOPY)
-        img = Image.frombuffer('RGB', (width, height), bmp.GetBitmapBits(True),
+        img = Image.frombuffer('RGB', (real_width, real_height), bmp.GetBitmapBits(True),
                                'raw', 'BGRX', 0, 1)
         return img
 elif platform.system() == "Linux":
@@ -71,7 +73,7 @@ class ClipperButton(tk.Button):
             dx, dy, dx + self.master.winfo_width() * SCREEN_SCALING_FACTOR,
             dy + self.master.winfo_height() * SCREEN_SCALING_FACTOR
         ])
-        img.save("screenshot_" + datetime.now().strftime("%Y-%m-%d_%H:%M:%S") +
+        img.save("screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
                  ".jpg")
 
 
@@ -135,6 +137,7 @@ class ResizeEntry(tk.Entry):
 
 
 class MyTk(MyTkBase):
+
     def __init__(self, width, height, name):
         super().__init__(width, height, name)
         self.attributes("-alpha", 0.5)
