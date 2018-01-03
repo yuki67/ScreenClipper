@@ -48,8 +48,6 @@ class ClipperButton(tk.Button):
         super().__init__(master)
         self["text"] = "screenshot"
         self["font"] = ("NanumBarunGothic", 20, "bold")
-        self["bg"] = "blue"
-        self["fg"] = "yellow"
         self.bind("<Button-1>", self.on_button_click)
 
     def on_button_click(self, _):
@@ -83,7 +81,7 @@ class TextBox(tk.Label):
     """ 現在のウィンドウの大きさを表示するラベル """
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, justify=tk.CENTER)
         self["text"] = "size: %dx%d" % (
             master.winfo_width() * SCREEN_SCALING_FACTOR,
             master.winfo_height() * SCREEN_SCALING_FACTOR)
@@ -123,7 +121,7 @@ class ResizeEntry(tk.Entry):
     """ リサイズするときにサイズを入力する場所 """
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, justify=tk.CENTER)
         self["font"] = ("NanumBarunGothic", 20, "bold")
         self.insert(tk.END,
                     "%dx%d" % (master.winfo_width() * SCREEN_SCALING_FACTOR,
