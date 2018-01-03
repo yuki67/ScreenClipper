@@ -1,0 +1,9 @@
+* ScreenClipper
+
+for screenshot.
+
+| environment     | windows or linux, python 3.x  |
+| required module | Pillow, pywin32 (for windows) |
+| launch command  | =python ScreenClipper.py=     |
+
+[[file:demo.jpg]]

@@ -6,3 +6,4 @@ __pycache__
 .DS_Store
 ._.DS_Store
 *.jpg
+!demo.jpg
