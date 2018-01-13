@@ -76,7 +76,7 @@ class ClipperButton(tk.Button):
             int(dy + self.master.winfo_height() * SCREEN_SCALING_FACTOR)
         ])
         img.save("screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
-                 ".jpg")
+                 ".png")
 
 
 class TextBox(tk.Label):
